@@ -66,7 +66,7 @@
 2. **マウスカーソル追従（XY軸フリー版）** - カーソルにXY平面で追従し、Z軸は自由に動かせる
 3. **マウスカーソル追従（XZ軸・Y軸フリー版）** - カーソルにXZ平面で追従し、Y軸は自由に動かせる
 4. **マウスカーソル追従（XZ軸・Y軸固定版）** - カーソルにXZ平面で追従し、Y軸を固定
-5. **Y軸前後運動（高速版）** - Y軸方向の前後運動制御
+5. **Y軸上下運動** - Y軸方向（上下方向）の往復運動制御
 6. **Z軸上下運動** - Z軸方向のジェントルな上下運動
 7. **基本テスト** - 基本的な動作確認
 8. **アクティブテスト** - アクティブ制御のテスト
@@ -178,7 +178,7 @@ novint-falcon-examples/
 ├── falcon_test.cpp             # 基本テストプログラム
 ├── falcon_active_test.cpp      # アクティブ制御テスト
 ├── falcon_gentle_motion.cpp    # Z軸上下運動
-├── falcon_y_motion.cpp         # Y軸前後運動
+├── falcon_y_motion.cpp         # Y軸上下運動
 ├── falcon_cursor_motion.cpp    # カーソル追従（XY軸・Z軸固定）
 ├── falcon_cursor_xy.cpp        # カーソル追従（XY軸フリー）
 ├── falcon_cursor_xz.cpp        # カーソル追従（XZ軸・Y軸フリー）

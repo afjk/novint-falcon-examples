@@ -12,7 +12,7 @@ using namespace libnifalcon;
 
 int main() {
     std::cout << "========================================" << std::endl;
-    std::cout << "  スムーズなY軸前後運動プログラム" << std::endl;
+    std::cout << "  Y軸上下運動プログラム" << std::endl;
     std::cout << "========================================" << std::endl;
     std::cout << std::endl;
 
@@ -43,32 +43,39 @@ int main() {
 
     falcon.setFalconKinematic<FalconKinematicStamper>();
 
-    // スムーズなY軸前後運動のパラメータ
-    const double period = 1.0;           // 周期（秒）：1秒で1往復（速度2倍）
-    const double yAmplitude = 0.025;     // Y軸の移動範囲（メートル）：25mm
+    // 運動パラメータ
+    const double period = 2.0;           // 周期（秒）：2秒で1往復
+    const double yAmplitude = 0.060;     // Y軸の移動範囲（メートル）：60mm（最大可動範囲）
     const double frequency = 1.0 / period; // 周波数
-    const double centeringForce = 100.0;  // X, Z軸を中心に固定する力の強さ
-    const double yCenter = 0.0;          // Y軸の中心位置（前後の中央）
+    const double yCenter = 0.0;          // Y軸の中心位置（上下の中央）
+    const double xFixed = 0.0;           // X軸固定位置（中央）
+    const double zFixed = 0.10;          // Z軸固定位置（高さ10cm）
 
-    // PID+フィードフォワード制御パラメータ
-    const double Kp = 200.0;             // 比例ゲイン
-    const double Ki = 50.0;              // 積分ゲイン
-    const double Kd = 15.0;              // 微分ゲイン
-    const double Kff = 60.0;             // フィードフォワードゲイン（高速化のため2倍）
-    const double integralLimit = 0.01;   // 積分項の上限（飽和防止）
-    const double phaseCompensation = 0.35; // 位相補償（ラジアン）：約20度先読み
+    // PID制御パラメータ（振動抑制のため調整）
+    const double Kp = 100.0;             // 比例ゲイン（振動抑制のため減少）
+    const double Ki = 5.0;               // 積分ゲイン（振動抑制のため減少）
+    const double Kd = 8.0;               // 微分ゲイン（振動抑制のため減少）
+    const double integralLimit = 0.005;  // 積分項の上限（より厳しく制限）
+
+    // ローパスフィルタパラメータ（振動除去用）
+    const double alpha = 0.15;           // フィルタ係数（0.15 = 15%の新データ、85%の古いデータ）
 
     // PID制御用変数
     std::array<double, 3> lastPos = {0.0, 0.0, 0.0};
-    double yErrorIntegral = 0.0;         // Y軸誤差の積分
+    double xErrorIntegral = 0.0;
+    double yErrorIntegral = 0.0;
+    double zErrorIntegral = 0.0;
+
+    // フィルタリング用変数
+    double filteredTargetY = yCenter;
 
     std::cout << std::endl;
-    std::cout << "スムーズなY軸前後運動のPID+フィードフォワード+位相補償制御を開始します。" << std::endl;
-    std::cout << "グリップが目標位置に向かって高速で滑らかに前後に動きます。" << std::endl;
+    std::cout << "Y軸上下運動制御を開始します（振動抑制版）。" << std::endl;
+    std::cout << "Falconグリップがスムーズに上下に動きます。" << std::endl;
     std::cout << "周期: " << period << "秒、振幅: ±" << (yAmplitude * 1000) << "mm" << std::endl;
-    std::cout << "範囲: " << ((yCenter - yAmplitude) * 1000) << "-" << ((yCenter + yAmplitude) * 1000) << "mm" << std::endl;
-    std::cout << "制御ゲイン: Kp=" << Kp << ", Ki=" << Ki << ", Kd=" << Kd << ", Kff=" << Kff << std::endl;
-    std::cout << "位相補償: " << phaseCompensation << " rad (" << (phaseCompensation * 180.0 / M_PI) << " deg)" << std::endl;
+    std::cout << "X軸は" << (xFixed * 1000) << "mm、Z軸は" << (zFixed * 1000) << "mmに固定されます。" << std::endl;
+    std::cout << "制御ゲイン: Kp=" << Kp << ", Ki=" << Ki << ", Kd=" << Kd << std::endl;
+    std::cout << "ローパスフィルタ係数: " << alpha << " (振動抑制)" << std::endl;
     std::cout << "Ctrl+C で終了してください。" << std::endl;
     std::cout << std::endl;
 
@@ -80,7 +87,7 @@ int main() {
             continue;
         }
 
-        // 位置を取得
+        // 現在の位置を取得
         auto pos = falcon.getPosition();
 
         // 経過時間を取得（秒）
@@ -89,36 +96,45 @@ int main() {
             currentTime - startTime).count();
         double elapsedSeconds = duration / 1000.0;
 
-        // 正弦波を使った目標位置と目標速度を計算（Y軸方向）
-        // 位置: sin(2π * frequency * time + phaseCompensation)
-        // 速度: 2π * frequency * amplitude * cos(2π * frequency * time + phaseCompensation)
+        // 正弦波を使った目標位置を計算（Y軸方向 = 上下方向）
         double phase = 2.0 * M_PI * frequency * elapsedSeconds;
-        double compensatedPhase = phase + phaseCompensation;  // 位相補償を適用
-        double targetY = yCenter + yAmplitude * std::sin(compensatedPhase);
-        double targetVelocity = yAmplitude * 2.0 * M_PI * frequency * std::cos(compensatedPhase);
+        double targetY = yCenter + yAmplitude * std::sin(phase);
 
-        // X, Z軸を中心に固定するバネ力を計算
-        double xCenteringForce = -centeringForce * pos[0];
-        double zCenteringForce = -centeringForce * (pos[2] - 0.10); // Z軸は高さ10cmを中心に固定
+        // ローパスフィルタを適用（急激な変化を抑制）
+        filteredTargetY = alpha * targetY + (1.0 - alpha) * filteredTargetY;
 
-        // Y軸のPID+フィードフォワード制御
-        double yError = targetY - pos[1];                    // 誤差（P項）
-        double yVelocity = (pos[1] - lastPos[1]) * 1000.0;  // 速度（D項用）
+        // X軸のPID制御（固定位置）
+        double xError = xFixed - pos[0];
+        double xVelocity = (pos[0] - lastPos[0]) * 1000.0;
+        xErrorIntegral += xError / 1000.0;
+        if (xErrorIntegral > integralLimit) xErrorIntegral = integralLimit;
+        if (xErrorIntegral < -integralLimit) xErrorIntegral = -integralLimit;
+        double xForce = Kp * xError + Ki * xErrorIntegral - Kd * xVelocity;
 
-        // 積分項の更新（飽和防止付き）
-        yErrorIntegral += yError / 1000.0;  // 1000Hzで積分
+        // Y軸のPID制御（フィルタリング済み目標値を使用）
+        double yError = filteredTargetY - pos[1];
+        double yVelocity = (pos[1] - lastPos[1]) * 1000.0;
+        yErrorIntegral += yError / 1000.0;
         if (yErrorIntegral > integralLimit) yErrorIntegral = integralLimit;
         if (yErrorIntegral < -integralLimit) yErrorIntegral = -integralLimit;
+        double yForce = Kp * yError + Ki * yErrorIntegral - Kd * yVelocity;
 
-        // PID+フィードフォワード制御則
-        double yForceP = Kp * yError;              // 比例項
-        double yForceI = Ki * yErrorIntegral;      // 積分項
-        double yForceD = -Kd * yVelocity;          // 微分項
-        double yForceFf = Kff * targetVelocity;    // フィードフォワード項
-        double yForce = yForceP + yForceI + yForceD + yForceFf;
+        // Z軸のPID制御（固定位置）
+        double zError = zFixed - pos[2];
+        double zVelocity = (pos[2] - lastPos[2]) * 1000.0;
+        zErrorIntegral += zError / 1000.0;
+        if (zErrorIntegral > integralLimit) zErrorIntegral = integralLimit;
+        if (zErrorIntegral < -integralLimit) zErrorIntegral = -integralLimit;
+        double zForce = Kp * zError + Ki * zErrorIntegral - Kd * zVelocity;
 
-        // 力を設定（Y軸制御、X/Z軸固定）
-        std::array<double, 3> force = {xCenteringForce, yForce, zCenteringForce};
+        // 力の制限（安全のため最大力を制限）
+        const double maxForce = 2.0;  // 最大2N
+        xForce = std::max(-maxForce, std::min(maxForce, xForce));
+        yForce = std::max(-maxForce, std::min(maxForce, yForce));
+        zForce = std::max(-maxForce, std::min(maxForce, zForce));
+
+        // 力を設定
+        std::array<double, 3> force = {xForce, yForce, zForce};
         falcon.setForce(force);
 
         // 現在の位置を記憶
@@ -127,14 +143,18 @@ int main() {
         // 1秒ごとに状態を表示
         loopCount++;
         if (loopCount % 1000 == 0) {
-            double yError = pos[1] - targetY;  // Y軸の誤差
-            double xzDistance = std::sqrt(pos[0]*pos[0] + (pos[2]-0.10)*(pos[2]-0.10));  // XZ平面での中心からの距離
+            double xzDistance = std::sqrt(
+                (pos[0] - xFixed) * (pos[0] - xFixed) +
+                (pos[2] - zFixed) * (pos[2] - zFixed)
+            );
 
             std::cout << "時間: " << elapsedSeconds << "秒 | "
-                      << "目標Y: " << (targetY * 1000) << "mm | "
+                      << "目標Y: " << (filteredTargetY * 1000) << "mm | "
                       << "実際Y: " << (pos[1] * 1000) << "mm | "
                       << "誤差Y: " << (yError * 1000) << "mm | "
-                      << "XZ中心距離: " << (xzDistance * 1000) << "mm"
+                      << "XZ中心距離: " << (xzDistance * 1000) << "mm | "
+                      << "X: " << (pos[0] * 1000) << "mm | "
+                      << "Z: " << (pos[2] * 1000) << "mm"
                       << std::endl;
         }
     }

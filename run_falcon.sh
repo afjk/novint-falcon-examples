@@ -8,7 +8,7 @@ echo "1. マウスカーソル追従（XY軸・Z軸固定版）"
 echo "2. マウスカーソル追従（XY軸フリー版）"
 echo "3. マウスカーソル追従（XZ軸・Y軸フリー版）"
 echo "4. マウスカーソル追従（XZ軸・Y軸固定版）"
-echo "5. Y軸前後運動（高速版）"
+echo "5. Y軸上下運動"
 echo "6. Z軸上下運動"
 echo "7. 基本テスト"
 echo "8. アクティブテスト"
@@ -33,7 +33,7 @@ case $choice in
         ./build/falcon_cursor_xz_fixed
         ;;
     5)
-        echo "Y軸前後運動プログラムを実行します..."
+        echo "Y軸上下運動プログラムを実行します..."
         ./build/falcon_y_motion
         ;;
     6)
