@@ -52,6 +52,27 @@
 ./run_falcon_test.sh loop
 ```
 
+### 3. カスタムプログラムの実行
+
+このプロジェクトには、複数のカスタム制御プログラムが含まれています。`run_falcon.sh`を使用して対話的に実行できます。
+
+```bash
+./run_falcon.sh
+```
+
+**利用可能なプログラム:**
+
+1. **マウスカーソル追従（XY軸・Z軸固定版）** - カーソルにXY平面で追従し、Z軸を固定
+2. **マウスカーソル追従（XY軸フリー版）** - カーソルにXY平面で追従し、Z軸は自由に動かせる
+3. **マウスカーソル追従（XZ軸・Y軸フリー版）** - カーソルにXZ平面で追従し、Y軸は自由に動かせる
+4. **マウスカーソル追従（XZ軸・Y軸固定版）** - カーソルにXZ平面で追従し、Y軸を固定
+5. **Y軸前後運動（高速版）** - Y軸方向の前後運動制御
+6. **Z軸上下運動** - Z軸方向のジェントルな上下運動
+7. **基本テスト** - 基本的な動作確認
+8. **アクティブテスト** - アクティブ制御のテスト
+
+各プログラムは、Falconデバイスとの対話的な制御を実現します。
+
 ## キャリブレーション
 
 テストを実行すると、最初にキャリブレーションが求められます：
@@ -60,19 +81,52 @@
 
 これでキャリブレーションが完了し、テストが開始されます。
 
+## セットアップ
+
+### リポジトリのクローン
+
+このプロジェクトはlibnifalconをgitサブモジュールとして使用しています。クローン時にサブモジュールも取得してください：
+
+```bash
+git clone --recurse-submodules https://github.com/afjk/novint-falcon-examples.git
+cd novint-falcon-examples
+```
+
+既にクローン済みの場合は、サブモジュールを初期化してください：
+
+```bash
+git submodule update --init --recursive
+```
+
+### ビルド方法
+
+#### 1. libnifalconのビルド
+
+```bash
+cd libnifalcon
+mkdir -p build
+cd build
+cmake ..
+make
+cd ../..
+```
+
+#### 2. プロジェクトのビルド
+
+```bash
+mkdir -p build
+cd build
+cmake ..
+make
+```
+
+これで、`build/`ディレクトリに実行ファイルが生成されます。
+
 ## プログラミング
 
 ### カスタムプログラムの作成
 
 `falcon_test.cpp`にサンプルプログラムがあります。これを参考に独自のプログラムを作成できます。
-
-#### ビルド方法
-
-```bash
-cd build
-cmake ..
-make
-```
 
 #### 実行方法
 
@@ -118,11 +172,17 @@ falcon.setForce(force);
 novint-falcon-examples/
 ├── README.md                    # このファイル
 ├── LICENSE                      # ライセンスファイル
-├── run_falcon_test.sh          # テスト実行スクリプト
+├── run_falcon_test.sh          # libnifalconテスト実行スクリプト
+├── run_falcon.sh               # カスタムプログラム実行スクリプト
+├── run_active_test.sh          # アクティブテスト実行スクリプト
 ├── falcon_test.cpp             # 基本テストプログラム
 ├── falcon_active_test.cpp      # アクティブ制御テスト
-├── falcon_gentle_motion.cpp    # ジェントルモーション
-├── falcon_cursor_*.cpp         # カーソル追従制御プログラム
+├── falcon_gentle_motion.cpp    # Z軸上下運動
+├── falcon_y_motion.cpp         # Y軸前後運動
+├── falcon_cursor_motion.cpp    # カーソル追従（XY軸・Z軸固定）
+├── falcon_cursor_xy.cpp        # カーソル追従（XY軸フリー）
+├── falcon_cursor_xz.cpp        # カーソル追従（XZ軸・Y軸フリー）
+├── falcon_cursor_xz_fixed.cpp  # カーソル追従（XZ軸・Y軸固定）
 ├── CMakeLists.txt              # ビルド設定
 ├── build/                      # ビルド出力（gitignore）
 └── libnifalcon/                # libnifalconライブラリ（サブモジュール）
@@ -148,6 +208,13 @@ libnifalcon付属のテストプログラムを使用してください：
 - [libnifalcon GitHub](https://github.com/libnifalcon/libnifalcon)
 - [libnifalcon ドキュメント](https://github.com/libnifalcon/libnifalcon/wiki)
 
-## セットアップ完了日
+## ライセンス
 
-2025-10-25
+このプロジェクトはMIT Licenseの下で公開されています。
+
+**重要な注意事項**: このプロジェクトは以下のライブラリを使用しています：
+- **libnifalcon** - BSD 3-Clause License
+- **GMTL** - GNU LGPL v2
+- **Novint SDK** - 非商用ライセンス（商用利用には制限があります）
+
+詳細は[LICENSE](LICENSE)ファイルを参照してください。

@@ -1,5 +1,6 @@
 #!/bin/bash
-cd "/Users/afjk/work/Novint Falcon"
+# スクリプトのディレクトリに移動
+cd "$(dirname "$0")"
 export DYLD_LIBRARY_PATH="./libnifalcon/build/lib:$DYLD_LIBRARY_PATH"
 
 echo "Novint Falcon テストプログラム"
