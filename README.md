@@ -70,6 +70,7 @@
 6. **Z軸上下運動** - Z軸方向のジェントルな上下運動
 7. **基本テスト** - 基本的な動作確認
 8. **アクティブテスト** - アクティブ制御のテスト
+9. **記録と再生** - グリップの動きを記録して再生する（1キー：記録、2キー：再生、LED表示付き）
 
 各プログラムは、Falconデバイスとの対話的な制御を実現します。
 
@@ -183,6 +184,7 @@ novint-falcon-examples/
 ├── falcon_cursor_xy.cpp        # カーソル追従（XY軸フリー）
 ├── falcon_cursor_xz.cpp        # カーソル追従（XZ軸・Y軸フリー）
 ├── falcon_cursor_xz_fixed.cpp  # カーソル追従（XZ軸・Y軸固定）
+├── falcon_record_play.cpp      # 記録と再生
 ├── CMakeLists.txt              # ビルド設定
 ├── build/                      # ビルド出力（gitignore）
 └── libnifalcon/                # libnifalconライブラリ（サブモジュール）

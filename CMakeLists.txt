@@ -29,6 +29,7 @@ add_executable(falcon_cursor_motion falcon_cursor_motion.cpp)
 add_executable(falcon_cursor_xy falcon_cursor_xy.cpp)
 add_executable(falcon_cursor_xz falcon_cursor_xz.cpp)
 add_executable(falcon_cursor_xz_fixed falcon_cursor_xz_fixed.cpp)
+add_executable(falcon_record_play falcon_record_play.cpp)
 
 # ライブラリのリンク
 target_link_libraries(falcon_test
@@ -77,4 +78,9 @@ target_link_libraries(falcon_cursor_xz_fixed
     usb-1.0
     "-framework CoreGraphics"
     "-framework CoreFoundation"
+)
+
+target_link_libraries(falcon_record_play
+    nifalcon
+    usb-1.0
 )
