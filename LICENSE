@@ -1,0 +1,44 @@
+MIT License
+
+Copyright (c) 2025 [Your Name]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+THIRD PARTY LICENSES
+================================================================================
+
+This software uses libnifalcon, which is subject to multiple licenses:
+
+1. libnifalcon Core Library - BSD 3-Clause License
+   Copyright (c) 2007-2016, The libnifalcon Project
+   See: libnifalcon/license/LICENSE_LIBNIF_BSD.txt
+
+2. GMTL (Generic Math Template Library) - GNU LGPL v2
+   See: libnifalcon/license/LICENSE_GMTL.txt
+
+3. Novint SDK Components - Noncommercial License
+   IMPORTANT: Some components are subject to Novint's noncommercial license
+   which restricts commercial use. See: libnifalcon/license/LICENSE_NOVINT.txt
+
+Users of this software must comply with all applicable third-party licenses,
+particularly the noncommercial restrictions of the Novint SDK license.
+
+For complete license information, please refer to the license files in the
+libnifalcon/license/ directory.
