@@ -4,6 +4,7 @@ cd "$(dirname "$0")"
 export DYLD_LIBRARY_PATH="./libnifalcon/build/lib:$DYLD_LIBRARY_PATH"
 
 echo "Novint Falcon テストプログラム"
+echo "0. 初期化・ファームウェアロードのみ"
 echo "1. マウスカーソル追従（XY軸・Z軸固定版）"
 echo "2. マウスカーソル追従（XY軸フリー版）"
 echo "3. マウスカーソル追従（XZ軸・Y軸フリー版）"
@@ -14,9 +15,13 @@ echo "7. 基本テスト"
 echo "8. アクティブテスト"
 echo "9. 記録と再生"
 echo ""
-read -p "実行するプログラムを選択してください (1-9): " choice
+read -p "実行するプログラムを選択してください (0-9): " choice
 
 case $choice in
+    0)
+        echo "初期化・ファームウェアロード処理を実行します..."
+        ./build/falcon_init_firmware
+        ;;
     1)
         echo "マウスカーソル追従プログラム（XY軸・Z軸固定版）を実行します..."
         ./build/falcon_cursor_motion
