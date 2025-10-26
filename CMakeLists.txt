@@ -30,7 +30,6 @@ add_executable(falcon_cursor_xy falcon_cursor_xy.cpp)
 add_executable(falcon_cursor_xz falcon_cursor_xz.cpp)
 add_executable(falcon_cursor_xz_fixed falcon_cursor_xz_fixed.cpp)
 add_executable(falcon_record_play falcon_record_play.cpp)
-add_executable(check_calibration check_calibration.cpp)
 
 # ライブラリのリンク
 target_link_libraries(falcon_test
@@ -82,11 +81,6 @@ target_link_libraries(falcon_cursor_xz_fixed
 )
 
 target_link_libraries(falcon_record_play
-    nifalcon
-    usb-1.0
-)
-
-target_link_libraries(check_calibration
     nifalcon
     usb-1.0
 )
