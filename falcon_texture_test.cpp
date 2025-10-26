@@ -65,7 +65,8 @@ int main() {
     std::cout << "テクスチャ強度: " << textureAmplitude << " N" << std::endl;
     std::cout << std::endl;
     std::cout << "グリップを一番外側まで動かしてから、キューブの中に入れてください。" << std::endl;
-    std::cout << "壁に触れると、ざらざらした触覚を感じます。" << std::endl;
+    std::cout << "壁に触れて動かすと、ざらざらした触覚を感じます。" << std::endl;
+    std::cout << "（静止している時は振動せず、動かした時だけ振動します）" << std::endl;
     std::cout << "Ctrl+C で終了してください。" << std::endl;
     std::cout << std::endl;
 
@@ -74,6 +75,10 @@ int main() {
     double noisePhase = 0.0;
     bool isInitializing = true;
     bool hasPrintedInitMsg = false;
+
+    // 前回の位置を記憶（速度計算用）
+    std::array<double, 3> oldPos = {0.0, 0.0, 0.0};
+    const double loopFrequency = 1000.0;  // ループ周波数（約1kHz）
 
     while (true) {
         if (!falcon.runIOLoop()) {
@@ -93,6 +98,9 @@ int main() {
                 std::cout << "キューブシミュレーションを開始します..." << std::endl;
                 isInitializing = false;
                 startTime = std::chrono::high_resolution_clock::now();
+                oldPos = pos;  // 初期位置を設定
+            } else {
+                oldPos = pos;
             }
             continue;
         }
@@ -102,6 +110,15 @@ int main() {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
             currentTime - startTime).count();
         double elapsedSeconds = duration / 1000.0;
+
+        // 速度を計算（前回の位置との差分）
+        std::array<double, 3> velocity;
+        velocity[0] = (pos[0] - oldPos[0]) * loopFrequency;
+        velocity[1] = (pos[1] - oldPos[1]) * loopFrequency;
+        velocity[2] = (pos[2] - oldPos[2]) * loopFrequency;
+
+        // 速度の大きさを計算
+        double speed = std::sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
 
         std::array<double, 3> force = {0.0, 0.0, 0.0};
 
@@ -131,33 +148,39 @@ int main() {
             // 基本的なバネ力（最も近い壁から押し返す力）
             force[closest] = -stiffness * dist;
 
-            // ざらざら感の生成
-            loopCount++;
+            // 速度に応じてざらざら感を生成（動かしている時だけ振動）
+            const double speedThreshold = 0.005;  // 速度の閾値（5mm/s以上で振動開始）
+            if (speed > speedThreshold) {
+                loopCount++;
 
-            // 時間ベースの周期的振動
-            double vibration = std::sin(2.0 * M_PI * textureFrequency * elapsedSeconds);
+                // 速度に応じたテクスチャ強度（速く動かすほど強く感じる）
+                double speedFactor = std::min(speed / 0.1, 1.0);  // 100mm/sで最大
 
-            // ランダムノイズ (-1.0 ~ 1.0)
-            double noise = (static_cast<double>(std::rand()) / RAND_MAX) * 2.0 - 1.0;
+                // 時間ベースの周期的振動
+                double vibration = std::sin(2.0 * M_PI * textureFrequency * elapsedSeconds);
 
-            // 低周波ノイズ (ゆっくり変化するざらつき感)
-            noisePhase += 0.01;
-            double slowNoise = std::sin(noisePhase) * std::cos(noisePhase * 1.7);
+                // ランダムノイズ (-1.0 ~ 1.0)
+                double noise = (static_cast<double>(std::rand()) / RAND_MAX) * 2.0 - 1.0;
 
-            // テクスチャ力の合成
-            double textureForce = textureAmplitude * (
-                vibration * 0.3 +
-                noise * 0.4 +
-                slowNoise * 0.3
-            );
+                // 低周波ノイズ (ゆっくり変化するざらつき感)
+                noisePhase += 0.01;
+                double slowNoise = std::sin(noisePhase) * std::cos(noisePhase * 1.7);
 
-            // 壁に対して垂直な方向（closest軸）にテクスチャを加える
-            force[closest] += textureForce;
+                // テクスチャ力の合成（速度に比例）
+                double textureForce = textureAmplitude * speedFactor * (
+                    vibration * 0.3 +
+                    noise * 0.4 +
+                    slowNoise * 0.3
+                );
 
-            // 他の2軸（接線方向）にもテクスチャ力を加える
-            for (int axis = 0; axis < 3; axis++) {
-                if (axis != closest) {
-                    force[axis] += textureForce * 0.5;
+                // 壁に対して垂直な方向（closest軸）にテクスチャを加える
+                force[closest] += textureForce;
+
+                // 他の2軸（接線方向）にもテクスチャ力を加える
+                for (int axis = 0; axis < 3; axis++) {
+                    if (axis != closest) {
+                        force[axis] += textureForce * 0.5;
+                    }
                 }
             }
 
@@ -169,7 +192,8 @@ int main() {
                           << (pos[1] * 1000) << ", "
                           << (pos[2] * 1000) << "] mm | "
                           << "最近壁: " << (closest == 0 ? "X" : closest == 1 ? "Y" : "Z") << " | "
-                          << "距離: " << (std::fabs(dist) * 1000) << " mm"
+                          << "距離: " << (std::fabs(dist) * 1000) << " mm | "
+                          << "速度: " << (speed * 1000) << " mm/s"
                           << std::endl;
             }
         } else {
@@ -181,6 +205,12 @@ int main() {
                           << (pos[2] * 1000) << "] mm" << std::endl;
             }
         }
+
+        // 位置を記憶（次回の速度計算用）
+        // ノイズ除去のため、ローパスフィルタを適用
+        oldPos[0] = 0.3 * oldPos[0] + 0.7 * pos[0];
+        oldPos[1] = 0.3 * oldPos[1] + 0.7 * pos[1];
+        oldPos[2] = 0.3 * oldPos[2] + 0.7 * pos[2];
 
         // 力をデバイスに送信
         falcon.setForce(force);
