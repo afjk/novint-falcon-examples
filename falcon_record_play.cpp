@@ -283,8 +283,10 @@ int main() {
 
                 // PID制御で各軸の力を計算
                 std::array<double, 3> force;
+                double totalError = 0.0;
                 for (int i = 0; i < 3; i++) {
                     double error = filteredTarget[i] - pos[i];
+                    totalError += error * error;  // 二乗誤差
                     double velocity = (pos[i] - lastPos[i]) * 1000.0;
                     errorIntegral[i] += error / 1000.0;
 
@@ -295,8 +297,19 @@ int main() {
                     force[i] = Kp * error + Ki * errorIntegral[i] - Kd * velocity;
                 }
 
-                // 力の制限（安全のため）
-                const double maxForce = 2.0;
+                // 誤差の大きさを計算（距離）
+                double errorDistance = std::sqrt(totalError) * 1000.0; // メートルからミリメートルへ
+
+                // 誤差に応じて最大力を調整（障害物がある場合は強い力で侵入を試みる）
+                double maxForce;
+                if (errorDistance < 5.0) {
+                    maxForce = 2.0;  // 誤差が小さい：通常の力
+                } else if (errorDistance < 10.0) {
+                    maxForce = 5.0;  // 誤差が中程度：強い力
+                } else {
+                    maxForce = 9.0;  // 誤差が大きい（障害物）：最大の力（デバイス仕様上限）
+                }
+
                 for (int i = 0; i < 3; i++) {
                     force[i] = std::max(-maxForce, std::min(maxForce, force[i]));
                 }
