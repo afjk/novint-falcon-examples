@@ -14,8 +14,9 @@ echo "6. Z軸上下運動"
 echo "7. 基本テスト"
 echo "8. アクティブテスト"
 echo "9. 記録と再生"
+echo "10. ざらざらテクスチャテスト"
 echo ""
-read -p "実行するプログラムを選択してください (0-9): " choice
+read -p "実行するプログラムを選択してください (0-10): " choice
 
 case $choice in
     0)
@@ -57,6 +58,10 @@ case $choice in
     9)
         echo "記録と再生プログラムを実行します..."
         ./build/falcon_record_play
+        ;;
+    10)
+        echo "ざらざらテクスチャテストプログラムを実行します..."
+        ./build/falcon_texture_test
         ;;
     *)
         echo "無効な選択です。"

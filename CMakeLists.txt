@@ -31,6 +31,7 @@ add_executable(falcon_cursor_xz falcon_cursor_xz.cpp)
 add_executable(falcon_cursor_xz_fixed falcon_cursor_xz_fixed.cpp)
 add_executable(falcon_record_play falcon_record_play.cpp)
 add_executable(falcon_init_firmware falcon_init_firmware.cpp)
+add_executable(falcon_texture_test falcon_texture_test.cpp)
 
 # ライブラリのリンク
 target_link_libraries(falcon_test
@@ -87,6 +88,11 @@ target_link_libraries(falcon_record_play
 )
 
 target_link_libraries(falcon_init_firmware
+    nifalcon
+    usb-1.0
+)
+
+target_link_libraries(falcon_texture_test
     nifalcon
     usb-1.0
 )
