@@ -11,6 +11,7 @@ set(LIBNIFALCON_BUILD_DIR "${LIBNIFALCON_DIR}/build")
 # インクルードディレクトリ
 include_directories(
     ${LIBNIFALCON_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
     /opt/homebrew/include
 )
 
@@ -33,6 +34,7 @@ add_executable(falcon_record_play falcon_record_play.cpp)
 add_executable(falcon_init_firmware falcon_init_firmware.cpp)
 add_executable(falcon_texture_test falcon_texture_test.cpp)
 add_executable(falcon_viscous_sphere falcon_viscous_sphere.cpp)
+add_executable(falcon_mesh_haptic falcon_mesh_haptic.cpp)
 
 # ライブラリのリンク
 target_link_libraries(falcon_test
@@ -99,6 +101,11 @@ target_link_libraries(falcon_texture_test
 )
 
 target_link_libraries(falcon_viscous_sphere
+    nifalcon
+    usb-1.0
+)
+
+target_link_libraries(falcon_mesh_haptic
     nifalcon
     usb-1.0
 )

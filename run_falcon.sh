@@ -16,8 +16,9 @@ echo "8. アクティブテスト"
 echo "9. 記録と再生"
 echo "10. ざらざらテクスチャテスト（キューブ）"
 echo "11. もちもち球体テスト（お餅のようなぷにぷに）"
+echo "12. 3Dメッシュ触覚フィードバック（OBJモデル）"
 echo ""
-read -p "実行するプログラムを選択してください (0-11): " choice
+read -p "実行するプログラムを選択してください (0-12): " choice
 
 case $choice in
     0)
@@ -67,6 +68,19 @@ case $choice in
     11)
         echo "もちもち球体テストプログラムを実行します..."
         ./build/falcon_viscous_sphere
+        ;;
+    12)
+        echo "3Dメッシュ触覚フィードバックプログラムを実行します..."
+        if [ -z "$2" ]; then
+            echo "使用方法: $0 12 <OBJファイルパス> [スケール]"
+            echo "例: $0 12 models/cube.obj 0.05"
+            exit 1
+        fi
+        if [ -z "$3" ]; then
+            ./build/falcon_mesh_haptic "$2"
+        else
+            ./build/falcon_mesh_haptic "$2" "$3"
+        fi
         ;;
     *)
         echo "無効な選択です。"
