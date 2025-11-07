@@ -33,6 +33,10 @@ add_executable(falcon_record_play falcon_record_play.cpp)
 add_executable(falcon_init_firmware falcon_init_firmware.cpp)
 add_executable(falcon_texture_test falcon_texture_test.cpp)
 add_executable(falcon_viscous_sphere falcon_viscous_sphere.cpp)
+add_executable(falcon_slippery_sphere falcon_slippery_sphere.cpp)
+add_executable(falcon_fluffy_sphere falcon_fluffy_sphere.cpp)
+add_executable(falcon_viscous_goo falcon_viscous_goo.cpp)
+add_executable(falcon_spring_sphere falcon_spring_sphere.cpp)
 
 # ライブラリのリンク
 target_link_libraries(falcon_test
@@ -99,6 +103,26 @@ target_link_libraries(falcon_texture_test
 )
 
 target_link_libraries(falcon_viscous_sphere
+    nifalcon
+    usb-1.0
+)
+
+target_link_libraries(falcon_slippery_sphere
+    nifalcon
+    usb-1.0
+)
+
+target_link_libraries(falcon_fluffy_sphere
+    nifalcon
+    usb-1.0
+)
+
+target_link_libraries(falcon_viscous_goo
+    nifalcon
+    usb-1.0
+)
+
+target_link_libraries(falcon_spring_sphere
     nifalcon
     usb-1.0
 )
